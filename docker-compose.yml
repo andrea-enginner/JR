@@ -50,10 +50,12 @@ services:
     image: web
     command: bash -c "sh init-services-projetosd-web.sh"
     hostname: web
+    
     container_name: web
     restart: always
     volumes:  
       - .:/code
+      - ./static:/code/static  # Mapeie a pasta para o contêiner
     ports:
       - 3000:3000 # debugging service 
     environment:
