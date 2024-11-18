@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .register-container {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 400px;
+            max-width: 100%;
+        }
+
+        .register-container h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+        }
+
+        .register-container p {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="tel"],
+        .form-group select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .form-error {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .form-error::before {
+            content: "⚠ ";
+            font-weight: bold;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .link {
+            margin-top: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .link a {
+            color: #007BFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Crie sua conta</h2>
+        <p>Preencha os campos abaixo para criar sua conta.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <!-- Erro geral -->
+            {% if form.non_field_errors %}
+            <div class="form-error">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            <!-- Nome -->
+            <div class="form-group">
+                {{ form.first_name.label_tag }}
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                <div class="form-error">{{ form.first_name.errors|first }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Sobrenome -->
+            <div class="form-group">
+                {{ form.last_name.label_tag }}
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                <div class="form-error">{{ form.last_name.errors|first }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                {% if form.email.errors %}
+                <div class="form-error">{{ form.email.errors|first }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Senha -->
+            <div class="form-group">
+                {{ form.password1.label_tag }}
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                <div class="form-error">{{ form.password1.errors|first }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Confirmação de senha -->
+            <div class="form-group">
+                {{ form.password2.label_tag }}
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                <div class="form-error">{{ form.password2.errors|first }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Telefone -->
+            <div class="form-group">
+                {{ form.telefone.label_tag }}
+                {{ form.telefone }}
+                {% if form.telefone.errors %}
+                <div class="form-error">{{ form.telefone.errors|first }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Checkbox -->
+            <div class="form-group checkbox">
+                {{ form.is_vendedor }}
+                {{ form.is_vendedor.label_tag }}
+            </div>
+
+            <button type="submit">Registrar</button>
+        </form>
+
+        <div class="link">
+            Já tem uma conta? <a href="{% url 'login' %}">Faça login</a>
+        </div>
+    </div>
+</body>
+</html>
