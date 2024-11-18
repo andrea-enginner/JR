@@ -42,6 +42,9 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'registro.Usuario'  # Substitua 'app' pelo nome do seu app
 
+LOGIN_REDIRECT_URL = '/login/'  # Redireciona para a página inicial, por exemplo
+LOGOUT_REDIRECT_URL = '/login/'  # Substitua pela URL desejada, como a página de login
+
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Backend padrão
