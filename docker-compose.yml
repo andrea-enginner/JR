@@ -56,6 +56,7 @@ services:
     volumes:  
       - .:/code
       - ./static:/code/static  # Mapeie a pasta para o contêiner
+      - ./staticfiles:/code/staticfiles
     ports:
       - 3000:3000 # debugging service 
     environment:
