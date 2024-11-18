@@ -16,24 +16,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # required by all-auth
-    'django.contrib.sites',
- 
-
-    # providers all-auth
-        # https://django-allauth.readthedocs.io/en/latest/installation.html
-        'allauth.socialaccount.providers.google',
-        #'allauth.socialaccount.providers.instagram',
-        #'allauth.socialaccount.providers.apple',
-        #'allauth.socialaccount.providers.facebook',
-        #'allauth.socialaccount.providers.linkedin',
-        #'allauth.socialaccount.providers.twitter',
-    
-    # https://pypi.org/project/django-widget-tweaks/
-    # Tweak the form field rendering in templates, 
-    # not in python-level form definitions. Altering CSS classes and HTML attributes is supported.
-    'widget_tweaks',
 
     # Enable the inner home (home)   
     'apps.registro',  
@@ -46,9 +28,6 @@ LOGIN_REDIRECT_URL = '/login/'  # Redireciona para a página inicial, por exempl
 LOGOUT_REDIRECT_URL = '/login/'  # Substitua pela URL desejada, como a página de login
 
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # Backend padrão
-]
 
 
 LOGGING = {
