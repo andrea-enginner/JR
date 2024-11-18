@@ -19,8 +19,8 @@ SECRET_KEY = "hLwoS-HbZx4eNUTqrM3osPFdHQamfLcYo38iugUCX4d"
 DEBUG = 0
 
 # load production server from .env
-ALLOWED_HOSTS        = ['projetosd.com.br']
-CSRF_TRUSTED_ORIGINS = ['projetosd.com.br']
+ALLOWED_HOSTS        = ['distribulanche.com.br', 'www.distribulanche.com.br']
+CSRF_TRUSTED_ORIGINS = ['distribulanche.com.br', 'www.distribulanche.com.br']
 
 ACCOUNT_DEFAULT_HTTP_PROTOCOL='https'
 

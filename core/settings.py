@@ -19,9 +19,7 @@ INSTALLED_APPS = [
     
     # required by all-auth
     'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
+ 
 
     # providers all-auth
         # https://django-allauth.readthedocs.io/en/latest/installation.html
@@ -38,9 +36,33 @@ INSTALLED_APPS = [
     'widget_tweaks',
 
     # Enable the inner home (home)   
-    'apps.enquetes',  
+    'apps.registro',  
 
 ]
+
+AUTH_USER_MODEL = 'registro.Usuario'  # Substitua 'app' pelo nome do seu app
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Backend padrão
+]
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
+
+
 
 # configurações servem apenas para send_common (SMTP using DJango)
 EMAIL_HOST = 'smtp.xxxxxxxxx.com'

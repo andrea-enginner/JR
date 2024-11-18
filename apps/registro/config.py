@@ -7,5 +7,5 @@ from django.apps import AppConfig
 
 
 class MyConfig(AppConfig):
-    name = 'apps.enquetes'
-    label = 'apps_enquetes'
+    name = 'apps.registro'
+    label = 'apps_registro'
