@@ -1,3 +1,6 @@
+{% load static %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,16 +35,17 @@
             text-align: center;
         }
 
-        .register-container p {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 30px;
+        .preview-container {
             text-align: center;
+            margin-bottom: 20px;
         }
 
-        form {
-            display: flex;
-            flex-direction: column;
+        .preview-container img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #ddd;
         }
 
         .form-group {
@@ -57,10 +61,7 @@
             font-weight: bold;
         }
 
-        .form-group input[type="text"],
-        .form-group input[type="email"],
-        .form-group input[type="password"],
-        .form-group input[type="tel"],
+        .form-group input,
         .form-group select {
             padding: 12px;
             border: 1px solid #ccc;
@@ -80,11 +81,6 @@
             margin-top: 5px;
         }
 
-        .form-error::before {
-            content: "⚠ ";
-            font-weight: bold;
-        }
-
         button {
             background-color: #007BFF;
             color: white;
@@ -101,103 +97,162 @@
             background-color: #0056b3;
         }
 
-        .link {
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
             margin-top: 20px;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .link a {
-            color: #007BFF;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .link a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="register-container">
         <h2>Crie sua conta</h2>
-        <p>Preencha os campos abaixo para criar sua conta.</p>
 
-        <form method="post">
-            {% csrf_token %}
-            <!-- Erro geral -->
-            {% if form.non_field_errors %}
-            <div class="form-error">
-                {{ form.non_field_errors }}
-            </div>
-            {% endif %}
+        <!-- Pré-visualização da foto -->
+        <div class="preview-container">
+            {% load static %}
+            <img id="photoPreview" src="/static/img/default_avatar.png" alt="Pré-visualização da foto">
+
             
-            <!-- Nome -->
-            <div class="form-group">
-                {{ form.first_name.label_tag }}
-                {{ form.first_name }}
-                {% if form.first_name.errors %}
-                <div class="form-error">{{ form.first_name.errors|first }}</div>
-                {% endif %}
-            </div>
 
-            <!-- Sobrenome -->
-            <div class="form-group">
-                {{ form.last_name.label_tag }}
-                {{ form.last_name }}
-                {% if form.last_name.errors %}
-                <div class="form-error">{{ form.last_name.errors|first }}</div>
-                {% endif %}
-            </div>
-
-            <!-- Email -->
-            <div class="form-group">
-                {{ form.email.label_tag }}
-                {{ form.email }}
-                {% if form.email.errors %}
-                <div class="form-error">{{ form.email.errors|first }}</div>
-                {% endif %}
-            </div>
-
-            <!-- Senha -->
-            <div class="form-group">
-                {{ form.password1.label_tag }}
-                {{ form.password1 }}
-                {% if form.password1.errors %}
-                <div class="form-error">{{ form.password1.errors|first }}</div>
-                {% endif %}
-            </div>
-
-            <!-- Confirmação de senha -->
-            <div class="form-group">
-                {{ form.password2.label_tag }}
-                {{ form.password2 }}
-                {% if form.password2.errors %}
-                <div class="form-error">{{ form.password2.errors|first }}</div>
-                {% endif %}
-            </div>
-
-            <!-- Telefone -->
-            <div class="form-group">
-                {{ form.telefone.label_tag }}
-                {{ form.telefone }}
-                {% if form.telefone.errors %}
-                <div class="form-error">{{ form.telefone.errors|first }}</div>
-                {% endif %}
-            </div>
-
-            <!-- Checkbox -->
-            <div class="form-group checkbox">
-                {{ form.is_vendedor }}
-                {{ form.is_vendedor.label_tag }}
-            </div>
-
-            <button type="submit">Registrar</button>
-        </form>
-
-        <div class="link">
-            Já tem uma conta? <a href="{% url 'login' %}">Faça login</a>
         </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Seção 1 -->
+            <div class="form-section active" id="section-1">
+                <!-- Foto -->
+                <div class="form-group">
+                    {{ form.foto_base64.label_tag }}
+                    <input type="file" id="photoUpload" name="foto" accept="image/*" onchange="previewPhoto(event)">
+                    {% if form.foto_base64.errors %}
+                    <div class="form-error">{{ form.foto_base64.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.first_name.label_tag }}
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                    <div class="form-error">{{ form.first_name.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.last_name.label_tag }}
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                    <div class="form-error">{{ form.last_name.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <div class="form-error">{{ form.email.errors|first }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Seção 2 -->
+            <div class="form-section" id="section-2">
+                <div class="form-group">
+                    {{ form.password1.label_tag }}
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                    <div class="form-error">{{ form.password1.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.password2.label_tag }}
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                    <div class="form-error">{{ form.password2.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.telefone.label_tag }}
+                    {{ form.telefone }}
+                    {% if form.telefone.errors %}
+                    <div class="form-error">{{ form.telefone.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group checkbox">
+                    {{ form.is_vendedor }}
+                    {{ form.is_vendedor.label_tag }}
+                </div>
+            </div>
+
+            <!-- Navegação -->
+            <div class="form-navigation">
+                <button type="button" id="prev-button" style="display: none;">Voltar</button>
+                <button type="button" id="next-button">Seguinte</button>
+                <button type="submit" id="submit-button" style="display: none;">Registrar</button>
+            </div>
+        </form>
     </div>
+
+    <script>
+        const sections = document.querySelectorAll('.form-section');
+        const nextButton = document.getElementById('next-button');
+        const prevButton = document.getElementById('prev-button');
+        const submitButton = document.getElementById('submit-button');
+
+        let currentSectionIndex = 0;
+
+        function showSection(index) {
+            sections.forEach((section, i) => {
+                section.classList.toggle('active', i === index);
+            });
+            prevButton.style.display = index > 0 ? 'inline-block' : 'none';
+            nextButton.style.display = index < sections.length - 1 ? 'inline-block' : 'none';
+            submitButton.style.display = index === sections.length - 1 ? 'inline-block' : 'none';
+        }
+
+        nextButton.addEventListener('click', () => {
+            if (currentSectionIndex < sections.length - 1) {
+                currentSectionIndex++;
+                showSection(currentSectionIndex);
+            }
+        });
+
+        prevButton.addEventListener('click', () => {
+            if (currentSectionIndex > 0) {
+                currentSectionIndex--;
+                showSection(currentSectionIndex);
+            }
+        });
+
+        showSection(currentSectionIndex);
+
+        // Pré-visualização da foto
+        function previewPhoto(event) {
+            const photoPreview = document.getElementById('photoPreview');
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                photoPreview.src = "/registro/static/img/default_avatar.png";
+            }
+        }
+    </script>
 </body>
 </html>

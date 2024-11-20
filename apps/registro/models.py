@@ -22,7 +22,7 @@ class Usuario(AbstractUser):
     email = models.EmailField(unique=True)
     telefone = models.CharField(max_length=15, blank=True, null=True)
     is_vendedor = models.BooleanField(default=False)
-
+    foto_base64 = models.TextField(blank=True, null=True)
     # Campos não usados pelo AbstractUser
     username = None
 
@@ -52,7 +52,9 @@ class Produto(models.Model):
     descricao = models.TextField()
     preco = models.DecimalField(max_digits=10, decimal_places=2)
     disponibilidade = models.BooleanField(default=True)
-
+    num_vendas = models.PositiveIntegerField(default=0)  # Adicione este campo
+    imagem_base64 = models.TextField(blank=True, null=True)
+    
     def __str__(self):
         return self.nome
 

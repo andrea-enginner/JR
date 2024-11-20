@@ -19,6 +19,7 @@ INSTALLED_APPS = [
 
     # Enable the inner home (home)   
     'apps.registro',  
+    'apps.marketplace',  
 
 ]
 
