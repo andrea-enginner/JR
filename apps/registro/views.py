@@ -1,7 +1,7 @@
 import base64
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from registro.models import Vendedor
+from .models import Vendedor
 from .forms import UsuarioCreationForm
 
 
