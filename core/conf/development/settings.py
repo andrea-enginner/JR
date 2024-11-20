@@ -94,7 +94,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 ROOT_URLCONF = 'core.urls'
-LOGIN_REDIRECT_URL = '/marketplace/'
+LOGIN_REDIRECT_URL = '/marketplace/lanches/'
 #LOGOUT_REDIRECT_URL = "home"  # Route defined in home/urls.py
 ACCOUNT_LOGOUT_ON_GET = True
 TEMPLATE_DIR = os.path.join(BASE_DIR, "apps/templates")  # ROOT dir for templates

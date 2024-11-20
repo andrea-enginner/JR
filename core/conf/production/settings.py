@@ -45,7 +45,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 ROOT_URLCONF = 'core.urls'
-LOGIN_REDIRECT_URL = '/marketplace/'
+LOGIN_REDIRECT_URL = '/marketplace/lanches/'
 
 
 #LOGOUT_REDIRECT_URL = "home"  # Route defined in home/urls.py
