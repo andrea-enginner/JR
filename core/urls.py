@@ -11,8 +11,8 @@ from django.urls import path, include  # add this
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),             
     path('accounts/', include('django.contrib.auth.urls')),  
-  #  path('register/', views.register, name='register'),
-    
+  #  path('register/', views.register, name='register'),    
    
     path('', include('apps.registro.urls')),  
+    path('marketplace/', include('apps.marketplace.urls')),  
 ]
