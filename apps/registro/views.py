@@ -51,7 +51,7 @@ def register(request):
             user = authenticate(request, email=email, password=password)
             if user:
                 login(request, user)
-                return redirect('/marketplace/lanches.html')
+                return redirect('/marketplace/lanches/')
     else:
         form = UsuarioCreationForm()
     return render(request, 'registration/register.html', {'form': form})
