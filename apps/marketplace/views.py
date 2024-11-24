@@ -36,4 +36,4 @@ def marketplace_view(request):
     elif sort_by == 'nome':  # Ordenar por nome (ignorar maiúsculas)
         produtos = produtos.annotate(lower_nome=Func(F('nome'), function='LOWER')).order_by('lower_nome')
 
-    return render(request, 'marketplace/home.html', {'produtos': produtos})
+    return render(request, 'marketplace', {'produtos': produtos})
