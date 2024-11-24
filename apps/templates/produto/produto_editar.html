@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white text-center">
+        <h1 class="h5 mb-0">Editar Produto</h1>
+      </div>
+      <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <!-- Nome do Produto -->
+          <div class="row mb-3 align-items-center">
+            <div class="col-md-3">
+              <label for="id_nome" class="form-label">Nome do Produto</label>
+            </div>
+            <div class="col-md-9">
+              <input type="text" id="id_nome" name="nome" class="form-control" value="{{ produto.nome }}">
+            </div>
+          </div>
+
+          <!-- Descrição -->
+          <div class="row mb-3 align-items-center">
+            <div class="col-md-3">
+              <label for="id_descricao" class="form-label">Descrição</label>
+            </div>
+            <div class="col-md-9">
+              <textarea id="id_descricao" name="descricao" class="form-control" rows="3">{{ produto.descricao }}</textarea>
+            </div>
+          </div>
+
+          <!-- Preço -->
+          <div class="row mb-3 align-items-center">
+            <div class="col-md-3">
+              <label for="id_preco" class="form-label">Preço</label>
+            </div>
+            <div class="col-md-9">
+              <input type="text" id="id_preco" name="preco" class="form-control" value="{{ produto.preco }}">
+            </div>
+          </div>
+
+          <!-- Disponibilidade -->
+          <div class="row mb-3 align-items-center">
+            <div class="col-md-3">
+              <label for="id_disponibilidade" class="form-label">Disponibilidade</label>
+            </div>
+            <div class="col-md-9">
+              <div class="form-check form-switch">
+                <input 
+                  type="checkbox" 
+                  id="id_disponibilidade" 
+                  name="disponibilidade" 
+                  class="form-check-input" 
+                  {% if produto.disponibilidade %} checked {% endif %}
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Foto do Produto -->
+          <div class="row mb-3 align-items-center">
+            <div class="col-md-3">
+              <label for="photoUpload" class="form-label">Foto do Produto</label>
+            </div>
+            <div class="col-md-9">
+              <input 
+                type="file" 
+                id="photoUpload" 
+                name="foto" 
+                accept="image/*" 
+                class="form-control" 
+                onchange="previewPhoto(event)">
+              <div class="mt-3">
+                <!-- Preview Inicial com Imagem Base64 -->
+                <img 
+                  id="photoPreview" 
+                  src="{% if produto.imagem_base64 %}data:image/png;base64,{{ produto.imagem_base64 }}{% else %}# {% endif %}" 
+                  alt="Preview da Imagem" 
+                  class="img-thumbnail {% if not produto.imagem_base64 %}d-none{% endif %}" 
+                  style="max-width: 200px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões -->
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-success">Salvar Alterações</button>
+            <a href="{% url 'marketplace' %}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Função para pré-visualizar a imagem
+    function previewPhoto(event) {
+        const photoPreview = document.getElementById('photoPreview');
+        const file = event.target.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                photoPreview.src = e.target.result; // Atualiza o preview com a nova imagem
+                photoPreview.classList.remove('d-none'); // Mostra o preview caso estivesse oculto
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+  </script>
+{% endblock %}

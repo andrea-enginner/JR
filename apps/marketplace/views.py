@@ -1,6 +1,9 @@
 from django.db.models import Q, Avg, Count
 from django.shortcuts import render
-from apps.registro.models import Produto
+from registro.models import Produto
+from django.db.models import Avg, Count, Q, Func, F
+
+
 
 def marketplace_view(request):
     # Termo de pesquisa
@@ -9,8 +12,8 @@ def marketplace_view(request):
     # Filtros de ordenação
     sort_by = request.GET.get('sort', 'nome')  # Padrão: ordenação por nome
 
-    # Query base
-    produtos = Produto.objects.annotate(
+    # Query base: apenas produtos disponíveis
+    produtos = Produto.objects.filter(disponibilidade=True).annotate(
         avg_rating=Avg('avaliacoes__nota'),
         num_avaliacoes=Count('avaliacoes')
     )
@@ -30,7 +33,7 @@ def marketplace_view(request):
         produtos = produtos.order_by('preco')
     elif sort_by == 'maior_preco':
         produtos = produtos.order_by('-preco')
-    elif sort_by == 'nome':  # Ordenar por nome
-        produtos = produtos.order_by('nome')
+    elif sort_by == 'nome':  # Ordenar por nome (ignorar maiúsculas)
+        produtos = produtos.annotate(lower_nome=Func(F('nome'), function='LOWER')).order_by('lower_nome')
 
     return render(request, 'marketplace/home.html', {'produtos': produtos})

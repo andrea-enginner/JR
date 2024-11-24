@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-center mb-4">Meus Produtos</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center">Imagem</th>
+                        <th class="text-center">Nome</th>
+                        <th class="text-center">Descrição</th>
+                        <th class="text-center" style="width: 80px;">Disponibilidade</th>
+                        <th class="text-center" style="width: 180px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos %}
+                    <tr>
+                        <td class="text-center">
+                            {% if produto.imagem_base64 %}
+                            <img src="data:image/png;base64,{{ produto.imagem_base64 }}" alt="Imagem do produto" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;" />
+                            {% else %}
+                            <span class="text-muted">Sem imagem</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center"><strong>{{ produto.nome }}</strong></td>
+                        <td class="text-justify">{{ produto.descricao }}</td>
+                        <td class="text-center">
+                            <!-- Slider button maior -->
+                            <div class="form-check form-switch d-inline-block">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    role="switch" 
+                                    id="disponivel_{{ produto.id }}" 
+                                    name="produto_{{ produto.id }}" 
+                                    value="True" 
+                                    style="width: 3rem; height: 1.5rem;" 
+                                    {% if produto.disponibilidade %} checked {% endif %}
+                                >
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <!-- Botão Editar Produto -->
+                            <a href="{% url 'editar_produto' produto.id %}" class="btn btn-primary btn-sm">
+                                Editar
+                            </a>
+                            <!-- Botão Deletar Produto -->
+                            <form action="{% url 'deletar_produto' produto.id %}" method="POST" style="display: inline;">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-danger btn-sm"
+                                  onclick="return confirm('Tem certeza que deseja deletar este produto? {{ produto.nome }} (ID: {{ produto.id }})')">
+                                  Deletar
+                              </button>
+                          </form>
+                          
+                          
+                          
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-success btn-lg">Atualizar Disponibilidade</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
