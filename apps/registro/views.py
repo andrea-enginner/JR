@@ -3,12 +3,12 @@ from multiprocessing import context
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
-from registro.models import Avaliacao, Produto, Vendedor
+from apps.registro.models import Avaliacao, Produto, Vendedor
 from .forms import UsuarioCreationForm
 from .forms import ProdutoForm
 from .forms import ProdutoDisponibilidadeForm
 from django.contrib.auth.decorators import login_required
-from registro.models import Vendedor
+from apps.registro.models import Vendedor
 
 
 
