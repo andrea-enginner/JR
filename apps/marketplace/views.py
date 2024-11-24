@@ -1,6 +1,6 @@
 from django.db.models import Q, Avg, Count
 from django.shortcuts import render
-from registro.models import Produto
+from apps.registro.models import Produto
 from django.db.models import Avg, Count, Q, Func, F
 
 
