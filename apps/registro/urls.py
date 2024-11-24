@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.urls import path
 
-from .views import deletar_produto_view, editar_produto_view, meus_produtos, minhas_avaliacoes, pagina_inicial, register, login_view, cadastrar_produto
+from apps.registro.views import deletar_produto_view, editar_produto_view, meus_produtos, minhas_avaliacoes, pagina_inicial, register, login_view, cadastrar_produto
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
