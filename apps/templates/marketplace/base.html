@@ -140,7 +140,9 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="">Meu Perfil</a></li>
                                 <li><a class="dropdown-item" href="">Meus Pedidos</a></li>
+                                <li><a class="dropdown-item" href="{% url 'minhas_avaliacoes' %}">Minhas Avaliações</a></li>
                                 {% if user.is_vendedor %}
+                                    <li><a class="dropdown-item" href="{% url 'meus_produtos' %}">Meus Produtos</a></li>
                                     <li><a class="dropdown-item" href="{% url 'cadastrar_produto' %}">Novo Produto</a></li>
                                 {% endif %}
                                 <li><hr class="dropdown-divider"></li>
