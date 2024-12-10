@@ -14,8 +14,21 @@ SECRET_KEY = "X4hLwoSsPFdHQamfLcYo38iugUCd-HbZx4eNUTqrM3o"
 DEBUG = 1
 
 # load production server from .env
-ALLOWED_HOSTS        = ['distribulanche.com.br', 'www.distribulanche.com.br']
-CSRF_TRUSTED_ORIGINS = ['distribulanche.com.br', 'www.distribulanche.com.br']
+ALLOWED_HOSTS        = [
+    'distribulanche.com.br',
+    'https://distribulanche.com.br',
+    'https://www.distribulanche.com.br',
+    'http://distribulanche.com.br',
+    'http://www.distribulanche.com.br',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'distribulanche.com.br',
+    'https://distribulanche.com.br',
+    'https://www.distribulanche.com.br',
+    'http://distribulanche.com.br',
+    'http://www.distribulanche.com.br',
+]
 
 ACCOUNT_DEFAULT_HTTP_PROTOCOL='https'
 
