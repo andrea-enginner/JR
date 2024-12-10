@@ -4,7 +4,9 @@ from multiprocessing import context
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
-import mercadopago
+
+from mercadopago import SDK
+
 from distribulanche import settings
 from registro.models import Avaliacao, Chat, Pagamento, Pedido, Produto, Vendedor
 from .forms import EditarPerfilForm, UsuarioCreationForm
