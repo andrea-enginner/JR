@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 from random import randint, choice, uniform
 from decimal import Decimal
-from registro.models import Usuario, Vendedor, Produto, Pedido, Avaliacao, Chat, Notificacao, Pagamento
+from apps.registro.models import Usuario, Vendedor, Produto, Pedido, Avaliacao, Chat, Notificacao, Pagamento
 
 
 try:
