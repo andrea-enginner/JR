@@ -1,11 +1,25 @@
 from django.core.management.base import BaseCommand
-from faker import Faker
+
 from random import randint, choice, uniform
 from decimal import Decimal
 from registro.models import Usuario, Vendedor, Produto, Pedido, Avaliacao, Chat, Notificacao, Pagamento
 
 
-import faker
+ try:
+    # Simulação de importação
+    from faker import Faker
+    fake = Faker()
+    print("Faker importado com sucesso!")
+
+    # Simula um comportamento do pacote, por exemplo, gerar um dado falso
+    dado_simulado = fake.name()
+    print(f"Dado simulado usando Faker: {dado_simulado}")
+
+except ImportError as e:
+    # Em caso de erro na importação
+    print("Erro ao importar o pacote Faker:", e)
+    raise ImportError("Certifique-se de que o pacote Faker está instalado.")
+
 
 fake = faker.Faker('pt_BR')
 fake = Faker('pt_BR')
