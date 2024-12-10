@@ -7,10 +7,10 @@ from django.contrib.auth import authenticate, login, logout
 
 from mercadopago import SDK
 
-from registro.models import Avaliacao, Chat, Pagamento, Pedido, Produto, Vendedor
-from .forms import EditarPerfilForm, UsuarioCreationForm
-from .forms import ProdutoForm
-from .forms import ProdutoDisponibilidadeForm
+from apps.registro.models import Avaliacao, Chat, Pagamento, Pedido, Produto, Vendedor
+from apps.registro.forms import EditarPerfilForm, UsuarioCreationForm
+from apps.registro.forms import ProdutoForm
+from apps.registro.forms import ProdutoDisponibilidadeForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Avg, Count
 from django.views.decorators.csrf import csrf_exempt
@@ -22,8 +22,8 @@ from django.core.mail import send_mail
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Produto
-from .serializers import ProdutoSerializer
+from apps.registro.models import Produto
+from apps.registro.serializers import ProdutoSerializer
 
 
 
