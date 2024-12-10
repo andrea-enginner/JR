@@ -4,7 +4,7 @@ from django.template import Library
 from django.template.defaultfilters import stringfilter
 from django.template.defaultfilters import floatformat
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.db.models import Sum
 
 register = Library()
@@ -18,7 +18,7 @@ def brl(valor, precisao=2):
  
     try:
         valor = floatformat(valor, precisao)
-        valor, decimal = force_text(valor).split('.')
+        valor, decimal = force_str(valor).split('.')
         valor = intcomma(valor)
         valor = valor.replace(',', '.') + ',' + decimal
         
