@@ -9,7 +9,7 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 
-from registro.models import Chat
+from apps.registro.models import Chat
 
 # Registrar os ViewSets
 router = DefaultRouter()
