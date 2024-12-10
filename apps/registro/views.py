@@ -293,9 +293,9 @@ def produto_comprar_view(request, produto_id):
 
     try:
         import mercadopago
-        except ImportError as e:
+    except ImportError as e:
         print("Erro ao importar o pacote Mercado Pago:", e)
-        return HttpResponse("Erro ao importar o pacote Mercado Pago", status=500)
+        return HttpResponse("Erro ao importar o pacote Mercado Pago. Certifique-se de que o pacote está instalado.", status=500)
 
     # Configurar o Mercado Pago
     sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
