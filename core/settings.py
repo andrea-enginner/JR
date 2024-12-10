@@ -16,12 +16,27 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize', #Humanização
+    'django.contrib.messages', #framework de mensagems
 
     # Enable the inner home (home)   
     'apps.registro',  
     'apps.marketplace',  
+    'apps.pagamentos',
 
 ]
+
+MERCADO_PAGO_PUBLIC_KEY = "APP_USR-efe243c4-1239-4235-8f41-8bfeeffbe523"
+MERCADO_PAGO_ACCESS_TOKEN = "APP_USR-2950190329009440-120114-f383923769d583cd9c714c610a3c40f0-1181482628"
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',         # Renderiza JSON
+       # 'rest_framework.renderers.BrowsableAPIRenderer', # Interface navegável da API
+    ],
+}
+
+
 
 AUTH_USER_MODEL = 'registro.Usuario'  # Substitua 'app' pelo nome do seu app
 
@@ -48,14 +63,15 @@ LOGGING = {
 
 
 # configurações servem apenas para send_common (SMTP using DJango)
-EMAIL_HOST = 'smtp.xxxxxxxxx.com'
-EMAIL_USE_TLS = True
+# Recuperação de senha
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'no-reply@projetosd.com.br'
-EMAIL_HOST_PASSWORD = 'xxxxxxxxxx' 
-DEFAULT_FROM_EMAIL = 'no-reply@projetosd.com.br'
-DEFAULT_REPLY_TO = 'falecom@projetosd.com.br'
-
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'distribulanche@gmail.com' 
+EMAIL_HOST_PASSWORD = 'wrvfvkvbabzptczr'  # foi usado a senha gerada pelo google
+DEFAULT_FROM_EMAIL = 'no-reply@distribulanche.com.br'  
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 

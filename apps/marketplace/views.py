@@ -1,9 +1,7 @@
-from django.db.models import Q, Avg, Count
+from django.db.models import Q, Avg, Count, Func, F
+from django.core.paginator import Paginator
 from django.shortcuts import render
-from apps.registro.models import Produto
-from django.db.models import Avg, Count, Q, Func, F
-
-
+from registro.models import Produto
 
 def marketplace_view(request):
     # Termo de pesquisa
@@ -13,7 +11,7 @@ def marketplace_view(request):
     sort_by = request.GET.get('sort', 'nome')  # Padrão: ordenação por nome
 
     # Query base: apenas produtos disponíveis
-    produtos = Produto.objects.filter(disponibilidade=True).annotate(
+    produtos = Produto.objects.filter(disponibilidade=True, num_produtos__gte=1).annotate(
         avg_rating=Avg('avaliacoes__nota'),
         num_avaliacoes=Count('avaliacoes')
     )
@@ -36,4 +34,9 @@ def marketplace_view(request):
     elif sort_by == 'nome':  # Ordenar por nome (ignorar maiúsculas)
         produtos = produtos.annotate(lower_nome=Func(F('nome'), function='LOWER')).order_by('lower_nome')
 
-    return render(request, 'marketplace/home.html', {'produtos': produtos})
+    # Paginação
+    paginator = Paginator(produtos, 9)  # Exibir 9 produtos por página
+    page_number = request.GET.get('page')  # Obter número da página atual
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'marketplace/home.html', {'page_obj': page_obj, 'search_query': search_query, 'sort_by': sort_by})

@@ -1,0 +1,316 @@
+{% extends "marketplace/base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Produto Detalhes -->
+    <div class="card shadow-lg border-0">
+        <div class="row g-0">
+            <!-- Imagem do Produto -->
+            <div class="col-lg-6">
+                <div class="p-3">
+                    <div class="rounded overflow-hidden">
+                        {% if produto.imagem_base64 %}
+                            <img src="data:image/png;base64,{{ produto.imagem_base64 }}" class="img-fluid" alt="{{ produto.nome }}">
+                        {% else %}
+                            <img src="/static/img/default-product.jpg" class="img-fluid" alt="Produto sem imagem">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Produto -->
+            <div class="col-lg-6">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <h1 class="card-title">{{ produto.nome }}</h1>
+                    <h3 class="text-success fw-bold">
+                        {% load humanize %}
+                        {% load custom_filters %}
+                        R$ {{ produto.preco|floatformat:2|intcomma|replace_dot_with_comma }}
+                    </h3>
+                    <p class="text-muted">{{ produto.descricao }}</p>
+                    
+                    <!-- Quantidade e Ações -->
+                    {% if user.is_authenticated %}
+                    <form method="post" id="compra-form" action="{% url 'produto_comprar' produto.id %}">
+                        {% csrf_token %}
+                        <div class="d-flex align-items-center mb-4">
+                            <label for="quantidade" class="me-3 fw-bold">Quantidade:</label>
+                            <input type="number" name="quantidade" id="quantidade" class="form-control w-auto" min="1" max="10" value="1">
+                        </div>
+                        <div class="d-grid gap-3">
+                            <button type="button" id="comprar-btn" class="btn btn-success btn-lg">Comprar Agora</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <p class="text-muted mt-2">Faça <a href="{% url 'login' %}">login</a> para comprar este produto.</p>
+                    {% endif %}
+                    <!-- Popup de redirecionamento -->
+                    <div id="popup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; max-width: 300px;">
+                            <h5>Redirecionando para pagamento...</h5>
+                            <div class="spinner" style="margin: 20px auto; width: 40px; height: 40px; border: 4px solid rgba(0, 0, 0, 0.1); border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        </div>
+                        
+                    </div>
+                    
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    
+                        #popup {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                    
+                        .spinner {
+                            margin: 0 auto; /* Garante centralização dentro do container */
+                        }
+                    </style>
+                    
+                    <script>
+                        document.getElementById("comprar-btn").addEventListener("click", function () {
+                            const form = document.getElementById("compra-form");
+                            const popup = document.getElementById("popup");
+                            const formData = new FormData(form);
+                    
+                            // Mostrar o popup de carregamento
+                            popup.style.display = "flex";
+                    
+                            fetch(form.action, {
+                                method: "POST",
+                                headers: {
+                                    "X-CSRFToken": "{{ csrf_token }}"
+                                },
+                                body: formData
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.link_pagamento) {
+                                        // Abrir o link de pagamento em uma nova guia
+                                        window.open(data.link_pagamento, "_blank");
+                                    } else {
+                                        alert("Erro ao gerar o link de pagamento.");
+                                    }
+                                    // Ocultar o popup após a operação
+                                    popup.style.display = "none";
+                                })
+                                .catch(error => {
+                                    console.error("Erro:", error);
+                                    alert("Erro ao processar a solicitação.");
+                                    popup.style.display = "none";
+                                });
+                        });
+                    </script>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avaliações -->
+    <div class="mt-5">
+        <h2 class="mb-4">Avaliações dos Usuários ({{ total_avaliacoes }})</h2>
+        
+        {% if total_avaliacoes > 0 %}
+        <div class="d-flex align-items-center mb-4">
+            <span class="text-warning fs-3">
+                {% for _ in ""|slice:":media_avaliacoes"|make_list %}
+                    &#9733;
+                {% endfor %}
+            </span>
+            <span class="ms-3 fs-5 text-muted">Nota média: {{ media_avaliacoes|floatformat:1 }} de 5</span>
+        </div>
+        {% else %}
+            <p class="text-muted">Este produto ainda não possui avaliações.</p>
+        {% endif %}
+
+        <!-- Lista de Avaliações -->
+        <div class="row">
+            {% for avaliacao in avaliacoes %}
+            <div class="col-md-6">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong class="text-dark">{{ avaliacao.avaliador.email }}</strong>
+                            <span class="text-warning">
+                                {% for _ in ""|slice:":avaliacao.nota"|make_list %}
+                                    &#9733;
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <p class="mt-3">{{ avaliacao.comentario }}</p>
+                        <small class="text-muted">{{ avaliacao.data_avaliacao }}</small>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-muted text-center">Nenhuma avaliação ainda. Seja o primeiro a avaliar!</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Chat com o Vendedor -->
+<div id="chat-container" class="position-fixed bottom-0 start-0 mb-3 ms-3 shadow-lg">
+    <!-- Aba Minimizada -->
+    <div id="chat-minimized" class="chat-tab bg-primary text-white text-center p-2 rounded" style="cursor: pointer;">
+        <strong>Chat com o Vendedor</strong>
+    </div>
+
+    <!-- Chat Expandido -->
+    <div id="chat-expanded" class="card border-0 d-none" style="width: 300px;">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title m-0">Chat</h5>
+                <button id="close-chat" class="btn btn-danger btn-sm">X</button>
+            </div>
+
+            <!-- Mensagens Recentes -->
+            <div id="chat-messages" class="overflow-auto mb-3" style="height: 200px;">
+                {% for mensagem in mensagens %}
+                <div class="chat-message {% if mensagem.comprador == user %}text-end{% else %}text-start{% endif %}" data-id="{{ mensagem.id }}">
+                    <div class="chat-message-content p-2 rounded {% if mensagem.comprador == user %}bg-primary text-white{% else %}bg-light{% endif %}">
+                        <strong>
+                            {% if mensagem.comprador == user %}
+                                Você  <!-- Cliente enviou -->
+                            {% elif mensagem.vendedor.usuario == user %}
+                                Você  <!-- Vendedor enviou -->
+                            {% else %}
+                                {% if mensagem.vendedor.usuario == user %}
+                                    {{ mensagem.comprador.first_name }}  <!-- Cliente para o vendedor -->
+                                {% else %}
+                                    Vendedor  <!-- Vendedor para o cliente -->
+                                {% endif %}
+                            {% endif %}
+                        </strong>
+                        <br>
+                        <div>{{ mensagem.mensagem }}</div>
+                        <small class="d-block text-muted">{{ mensagem.data_horario|date:"d/m/Y H:i" }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Formulário de Chat -->
+            {% if user.is_authenticated %}
+            <form id="chat-form" class="mt-2">
+                <textarea id="mensagem" name="mensagem" class="form-control" placeholder="Digite sua mensagem aqui..." rows="2" required></textarea>
+                <input type="hidden" id="vendedor_id" name="vendedor_id" value="{{ produto.vendedor.id }}">
+                <button type="submit" class="btn btn-primary mt-2 w-100">Enviar</button>
+            </form>
+            {% else %}
+            <p class="text-muted mt-2">Faça <a href="{% url 'login' %}">login</a> para enviar mensagens ao vendedor.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Elementos do chat
+        const chatMinimized = $('#chat-minimized');
+        const chatExpanded = $('#chat-expanded');
+        const closeChat = $('#close-chat');
+
+        // Abrir o chat ao clicar na aba
+        chatMinimized.on('click', function () {
+            chatMinimized.addClass('d-none'); // Esconde a aba minimizada
+            chatExpanded.removeClass('d-none'); // Mostra o chat expandido
+        });
+
+        // Minimizar o chat ao clicar no "X"
+        closeChat.on('click', function () {
+            chatExpanded.addClass('d-none'); // Esconde o chat expandido
+            chatMinimized.removeClass('d-none'); // Mostra a aba minimizada
+        });
+
+        // CSRF Token para AJAX
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // Enviar mensagens via AJAX
+        $('#chat-form').on('submit', function (e) {
+            e.preventDefault();
+        
+            const mensagem = $('#mensagem').val();
+            const vendedorId = $('#vendedor_id').val();
+        
+            $.ajax({
+                url: "{% url 'chat' produto.id %}",
+                type: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                data: { mensagem: mensagem, vendedor_id: vendedorId },
+                success: function (response) {
+                    if (response.status === "sucesso") {
+                        // Apenas limpa o campo e força a atualização
+                        $('#mensagem').val('');
+                        carregarNovasMensagens(); // Recarregar mensagens do backend
+                    }
+                },
+                error: function (xhr) {
+                    alert("Erro ao enviar mensagem: " + xhr.responseJSON.mensagem);
+                }
+            });
+        });
+        
+        // Função para carregar novas mensagens via AJAX
+        let ultimoId = 0; // Controle do último ID carregado
+
+        function carregarNovasMensagens() {
+            $.ajax({
+                url: "{% url 'obter_mensagens' produto.id %}",
+                type: "GET",
+                data: { ultimo_id: ultimoId },
+                success: function (response) {
+                    const mensagens = response.mensagens;
+                    mensagens.forEach(function (msg) {
+                        const novaMensagem = `
+                            <div class="chat-message ${msg.is_comprador ? 'text-end' : 'text-start'}">
+                                <div class="chat-message-content p-2 rounded ${msg.is_comprador ? 'bg-primary text-white' : 'bg-light'}">
+                                    <strong>${msg.nome}</strong><br>
+                                    <div>${msg.mensagem}</div>
+                                    <small class="d-block text-muted">${msg.data_horario}</small>
+                                </div>
+                            </div>`;
+                        $('#chat-messages').append(novaMensagem);
+                        ultimoId = Math.max(ultimoId, msg.id); // Atualiza o último ID carregado
+                    });
+        
+                    // Rola o chat para o final
+                    $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+                },
+                error: function () {
+                    console.error("Erro ao carregar novas mensagens");
+                }
+            });
+        }
+        
+        // Carregar mensagens ao iniciar
+        carregarNovasMensagens();
+
+        // Atualiza o chat a cada 3 segundos
+        setInterval(carregarNovasMensagens, 3000);
+    });
+</script>
+
+{% endblock %}

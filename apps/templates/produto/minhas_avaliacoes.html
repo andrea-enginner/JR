@@ -1,54 +1,28 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minhas Avaliações</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'marketplace' %}">
-                <strong>Distribulanche</strong>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <!-- Menu de navegação do usuário -->
-                        <li class="nav-item"><a class="nav-link" href="{% url 'minhas_avaliacoes' %}">Minhas Avaliações</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Sair</a></li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Entrar</a></li>
-                    {% endif %}
-                </ul>
-            </div>
+{% extends "marketplace/base.html" %}
+
+{% block title %}Minhas Avaliações{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <h2 class="mb-4 text-center text-primary">Minhas Avaliações</h2>
+    
+    {% if avaliacoes %}
+        <div class="list-group">
+            {% for avaliacao in avaliacoes %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-1 text-danger">{{ avaliacao.produto.nome }}</h5>
+                        <small class="text-muted">Nota: <strong>{{ avaliacao.nota }}</strong></small>
+                    </div>
+                    <p class="mb-1">{{ avaliacao.comentario }}</p>
+                    <small class="text-muted">Avaliado em: {{ avaliacao.data_avaliacao|date:"d/m/Y H:i" }}</small>
+                </div>
+            {% endfor %}
         </div>
-    </nav>
-    
-    <!-- Conteúdo das avaliações -->
-    <div class="container mt-5 pt-5">
-        <h2>Minhas Avaliações</h2>
-        
-        {% if avaliacoes %}
-            <ul class="list-group">
-                {% for avaliacao in avaliacoes %}
-                    <li class="list-group-item">
-                        <strong>{{ avaliacao.produto.nome }}</strong> - Nota: {{ avaliacao.nota }}
-                        <p>{{ avaliacao.comentario }}</p>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
+    {% else %}
+        <div class="alert alert-warning text-center mt-4">
             <p>Você ainda não fez nenhuma avaliação.</p>
-        {% endif %}
-    </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

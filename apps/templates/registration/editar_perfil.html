@@ -1,0 +1,68 @@
+{% extends "marketplace/base.htmlbase.html" %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Editar Perfil</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'editar_perfil' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% if messages %}
+                        <div>
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="id_first_name" class="form-label">Nome</label>
+                        <input type="text" name="first_name" id="id_first_name" class="form-control" value="{{ perfil_form.first_name.value }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_last_name" class="form-label">Sobrenome</label>
+                        <input type="text" name="last_name" id="id_last_name" class="form-control" value="{{ perfil_form.last_name.value }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">E-mail</label>
+                        <input type="email" name="email" id="id_email" class="form-control" value="{{ perfil_form.email.value }}" required>
+                    </div>
+                
+                    <!-- Campo para upload de imagem -->
+                    <div class="mb-3">
+                        <label for="foto" class="form-label">Foto de Perfil</label>
+                        <input type="file" id="foto" accept="image/*" onchange="convertToBase64()" class="form-control">
+                        <input type="hidden" name="foto_base64" id="foto_base64" value="{{ perfil_form.foto_base64.initial }}">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    <a href="{% url 'meu_perfil' %}" class="btn btn-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para converter a imagem em base64 -->
+    <script>
+        function convertToBase64() {
+            const input = document.getElementById("foto");
+            const hiddenInput = document.getElementById("foto_base64");
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                hiddenInput.value = event.target.result;
+            };
+
+            if (input.files.length > 0) {
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+{% endblock %}

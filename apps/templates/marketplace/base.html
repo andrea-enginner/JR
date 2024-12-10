@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -106,39 +107,40 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow-sm" style="background-color: #bb2d3b;">
+
         <div class="container">
             <a class="navbar-brand" href="{% url 'marketplace' %}">
-                <strong>Distribulanche</strong>
+                <img src="{% static 'img/logo_h.png' %}" alt="Distribulanche" style="height: 80px;">
             </a>
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    
                     {% if user.is_authenticated %}
                         <!-- Dropdown para o usuário autenticado -->
                         <li class="nav-item dropdown d-flex align-items-center">
                             {% if user.foto_base64 %}
-                                <img 
-                                    src="data:image/png;base64,{{ user.foto_base64 }}" 
-                                    alt="Foto de {{ user.first_name }}" 
-                                    class="rounded-circle me-2" 
-                                    style="width: 40px; height: 40px; object-fit: cover;"
-                                >
-                            {% else %}
-                                <img 
-                                    src="/static/img/default-avatar.png" 
-                                    alt="Foto padrão" 
-                                    class="rounded-circle me-2" 
-                                    style="width: 40px; height: 40px; object-fit: cover;"
-                                >
-                            {% endif %}
+                            <img 
+                            src="{{ user.foto_base64 }}" 
+                            alt="Foto do perfil" 
+                            class="rounded-circle me-2" 
+                            style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <img 
+                            src="{% static 'img/default_avatar.png' %}" 
+                            alt="Foto padrão" 
+                            class="rounded-circle me-2" 
+                            style="width: 40px; height: 40px; object-fit: cover;">
+                    {% endif %}  
                             <a class="nav-link dropdown-toggle text-warning" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Bem-vindo, {{ user.first_name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="">Meu Perfil</a></li>
+                                <li><a class="dropdown-item" href="{% url 'meu_perfil' %}">Meu Perfil</a></li>
                                 <li><a class="dropdown-item" href="">Meus Pedidos</a></li>
                                 <li><a class="dropdown-item" href="{% url 'minhas_avaliacoes' %}">Minhas Avaliações</a></li>
                                 {% if user.is_vendedor %}
@@ -165,7 +167,7 @@
     
     
     <!-- Main Content -->
-    <main class="container mt-4">
+    <main class="container mt-4 mb-5">
         {% block content %}
         <!-- Conteúdo específico de cada página -->
         {% endblock %}
@@ -176,9 +178,9 @@
         <section class="top">
             <ul>
                 <li>
-                    <img src="/img/distribulanche.png" class="custom-logo-footer" alt="distribulanche" style="width: 200px;">
+                    <img src="{% static 'img/logo_h.png' %}" class="custom-logo-footer" alt="distribulanche" style="width: 200px;">
                     <p>O DistribuLanche é uma aplicação desenvolvida para facilitar a compra e venda de lanches na UNIVASF, oferecendo uma experiência prática e intuitiva.</p>
-                    <a href="" class="btn btn-primary mt-3" style="color: white;">Ver catálogo</a>
+                   
                 </li>
                 <li>
                     <h3>Sede</h3>

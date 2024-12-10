@@ -1,0 +1,44 @@
+{% extends "marketplace/base.html" %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Alterar Senha</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'alterar_senha' %}">
+                    {% csrf_token %}
+                    
+                    {% if messages %}
+                        <div>
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="id_old_password" class="form-label">Senha Atual</label>
+                        <input type="password" name="old_password" id="id_old_password" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_new_password1" class="form-label">Nova Senha</label>
+                        <input type="password" name="new_password1" id="id_new_password1" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_new_password2" class="form-label">Confirmar Nova Senha</label>
+                        <input type="password" name="new_password2" id="id_new_password2" class="form-control" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Alterar Senha</button>
+                    <a href="{% url 'meu_perfil' %}" class="btn btn-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

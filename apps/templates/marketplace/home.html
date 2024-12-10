@@ -3,8 +3,8 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Bem-vindo ao Marketplace!</h1>
-    <p class="text-center text-muted">Encontre os melhores produtos aqui.</p>
+    <h1 class="text-center mb-4 text-danger">Bem-vindo ao Marketplace!</h1>
+    <p class="text-center text-warning">Encontre os melhores produtos aqui.</p>
 
     <!-- Barra de Pesquisa -->
     <div class="d-flex justify-content-between mb-4">
@@ -17,11 +17,11 @@
                 placeholder="Buscar produtos..." 
                 value="{{ request.GET.search|default:'' }}"
             >
-            <button class="btn btn-primary" type="submit">Pesquisar</button>
+            <button class="btn btn-danger" type="submit">Pesquisar</button>
         </form>
         <!-- Dropdown para Filtros -->
         <form method="get">
-            <select name="sort" class="form-select w-auto" onchange="this.form.submit()">
+            <select name="sort" class="form-select w-auto text-danger border-danger" onchange="this.form.submit()">
                 <option value="nome" {% if request.GET.sort == 'nome' %}selected{% endif %}>Ordenar por Nome</option>
                 <option value="mais_vendidos" {% if request.GET.sort == 'mais_vendidos' %}selected{% endif %}>Mais Vendidos</option>
                 <option value="mais_avaliados" {% if request.GET.sort == 'mais_avaliados' %}selected{% endif %}>Mais Avaliados</option>
@@ -33,42 +33,73 @@
 
     <!-- Lista de Produtos -->
     <div class="row">
-        {% for produto in produtos %}
+        {% for produto in page_obj %}
         <div class="col-md-4 mb-4">
             <div class="card shadow-lg h-100">
                 <!-- Imagem do Produto -->
-                    {% if produto.imagem_base64 %}
+                {% if produto.imagem_base64 %}
                     <img src="data:image/png;base64,{{ produto.imagem_base64 }}" class="card-img-top" alt="{{ produto.nome }}">
-                    {% else %}
+                {% else %}
                     <img src="/static/img/default-product.jpg" class="card-img-top" alt="Produto sem imagem">
-                    {% endif %}
+                {% endif %}
                 
                 <!-- Informações do Produto -->
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title text-center">{{ produto.nome }}</h5>
+                    <h5 class="card-title text-center">
+                        <a href="{% url 'produto_detalhes' produto.id %}" class="text-decoration-none text-danger">
+                            {{ produto.nome }}
+                        </a>
+                    </h5>
                     <p class="card-text text-muted">
                         <small>{{ produto.descricao|truncatechars:80 }}</small>
                     </p>
-                    <!-- Avaliação -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-success fw-bold mb-0">R$ {{ produto.preco }}</h6>
+                        <h6 class="text-success fw-bold mb-0">
+                            {% load humanize %}
+                            {% load custom_filters %}
+                            R$ {{ produto.preco|floatformat:2|intcomma|replace_dot_with_comma }}
+                        </h6>
                         <div class="d-flex align-items-center">
                             <i class="bi bi-star-fill text-warning me-1"></i>
                             <span class="fw-bold">{{ produto.avg_rating|default:0|floatformat:1 }}</span>
                             <small class="text-muted ms-2">({{ produto.num_avaliacoes }} avaliações)</small>
                         </div>
                     </div>
-                    
-                    <button class="btn btn-primary w-100 mt-auto">Comprar</button>
+                    <a href="{% url 'produto_detalhes' produto.id %}" class="btn btn-success w-100 mt-auto">
+                        Comprar
+                    </a>
                 </div>
             </div>
         </div>
         {% empty %}
-        <!-- Mensagem de Produtos Não Disponíveis -->
         <div class="col-12 text-center">
             <p class="text-muted">Nenhum produto disponível no momento. Volte mais tarde!</p>
         </div>
         {% endfor %}
     </div>
+    
+    <!-- Navegação de Paginação -->
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link text-danger" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}">Anterior</a>
+                </li>
+                {% endif %}
+                {% for page_num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_num == page_obj.number %}active{% endif %}">
+                    <a class="page-link text-danger" href="?page={{ page_num }}&search={{ search_query }}&sort={{ sort_by }}">{{ page_num }}</a>
+                </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link text-danger" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}">Próxima</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    
 </div>
 {% endblock %}

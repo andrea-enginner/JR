@@ -1,16 +1,99 @@
 import base64
+import json
 from multiprocessing import context
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth import authenticate, login
-from apps.registro.models import Avaliacao, Produto, Vendedor
-from .forms import UsuarioCreationForm
+from django.contrib.auth import authenticate, login, logout
+import mercadopago
+from distribulanche import settings
+from registro.models import Avaliacao, Chat, Pagamento, Pedido, Produto, Vendedor
+from .forms import EditarPerfilForm, UsuarioCreationForm
 from .forms import ProdutoForm
 from .forms import ProdutoDisponibilidadeForm
 from django.contrib.auth.decorators import login_required
-from apps.registro.models import Vendedor
+from django.db.models import Q, Avg, Count
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib import messages
+from django.core.mail import send_mail
 
 
+from rest_framework.viewsets import ViewSet
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Produto
+from .serializers import ProdutoSerializer
+
+
+
+class ProdutoViewSet(ViewSet):
+    # Listar todos os produtos
+    def list(self, request):
+        produtos = Produto.objects.filter(disponibilidade=True)  # Apenas produtos disponíveis
+        serializer = ProdutoSerializer(produtos, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # Obter detalhes de um produto específico
+    def retrieve(self, request, pk=None):
+        try:
+            produto = Produto.objects.get(pk=pk)
+            serializer = ProdutoSerializer(produto)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Produto.DoesNotExist:
+            return Response({"error": "Produto não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+@login_required
+def meu_perfil(request):
+
+    """
+    Exibe as informações do perfil do usuário.
+    """
+
+    return render(request, 'registration/meu_perfil.html', {'usuario': request.user})
+
+@login_required
+def editar_perfil(request):
+    
+    if request.method == 'POST':
+        perfil_form = EditarPerfilForm(request.POST, instance=request.user)
+        
+        if perfil_form.is_valid():
+            usuario = perfil_form.save(commit=False)
+            
+            # Verifica se há uma nova foto enviada como base64
+            foto_base64 = request.POST.get("foto_base64")
+            if foto_base64:
+                usuario.foto_base64 = foto_base64  # Atualiza a foto com o valor enviado
+            
+            # Se o campo da foto base64 não tiver sido alterado, mantemos a foto atual
+            elif not foto_base64 and request.user.foto_base64:
+                usuario.foto_base64 = request.user.foto_base64
+
+            usuario.save()
+            messages.success(request, 'Perfil atualizado com sucesso!')
+            return redirect('meu_perfil')
+    else:
+        perfil_form = EditarPerfilForm(instance=request.user)
+
+    return render(request, 'registration/editar_perfil.html', {'perfil_form': perfil_form})
+
+@login_required
+def alterar_senha(request):
+    if request.method == 'POST':
+        password_form = PasswordChangeForm(user=request.user, data=request.POST)
+        if password_form.is_valid():
+            password_form.save()
+            logout(request)  # Desloga o usuário após salvar a nova senha
+            return redirect('logout_message')  # Redireciona para a página de mensagem
+        else:
+            messages.error(request, 'Erro ao alterar senha. Verifique os campos.')
+    else:
+        password_form = PasswordChangeForm(user=request.user)
+
+    return render(request, 'registration/alterar_senha.html', {'password_form': password_form})
 
 def pagina_inicial(request):
     """
@@ -45,17 +128,26 @@ def register(request):
             if user.is_vendedor:
                 Vendedor.objects.create(usuario=user)
 
+                      # Envia o e-mail de boas-vindas ao nosso sistema Distribulanche
+            send_mail(
+                subject='Bem-vindo ao Distribulanche!',
+                message=f'Olá {user.first_name}, seu email foi registrado em nosso sistema! Obrigada por fazer parte do Distribulanche!',
+                from_email='distribulanche@gmail.com',
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+
             # Autentica e loga o usuário
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password1')
             user = authenticate(request, email=email, password=password)
             if user:
                 login(request, user)
-                return redirect('/marketplace/lanches/')
+                return redirect('home')
     else:
         form = UsuarioCreationForm()
     return render(request, 'registration/register.html', {'form': form})
-
 
 def login_view(request):
     if request.method == 'POST':
@@ -167,3 +259,154 @@ def deletar_produto_view(request, id):
     # Caso o método não seja POST, retorna um erro
     print("Método HTTP inválido. Esperado: POST")
     return HttpResponse("Método HTTP inválido. Esperado: POST", status=405)
+
+def produto_detalhes_view(request, produto_id):
+    # Obter o produto pelo ID
+    produto = get_object_or_404(Produto, id=produto_id, disponibilidade=True)
+
+    # Obter avaliações do produto
+    avaliacoes = Avaliacao.objects.filter(produto=produto).select_related('avaliador')
+    media_avaliacoes = avaliacoes.aggregate(avg_rating=Avg('nota'))['avg_rating'] or 0
+    total_avaliacoes = avaliacoes.count()
+
+    # Contexto para o template
+    context = {
+        'produto': produto,
+        'avaliacoes': avaliacoes,
+        'media_avaliacoes': media_avaliacoes,
+        'total_avaliacoes': total_avaliacoes,
+    }
+
+    return render(request, 'produto/produto_detalhes.html', context)
+
+
+def produto_comprar_view(request, produto_id):
+    # Obter o produto pelo ID
+    produto = get_object_or_404(Produto, id=produto_id, disponibilidade=True)
+
+    # Capturar a quantidade enviada pelo formulário (ou usar 1 como padrão)
+    quantidade = int(request.POST.get("quantidade", 1))
+    total_preco = float(produto.preco) * quantidade
+
+    # Configurar o Mercado Pago
+    sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
+    preference_data = {
+        "items": [
+            {
+                "title": produto.nome,
+                "quantity": 1,  #quantidade fixa para que o MP não altere o nome do produto
+                "unit_price": total_preco,  # Total calculado
+            }
+        ],
+        "back_urls": { # Redirecionamento automático para cada caso
+            "success": "https://seusite.com/sucesso",
+            "failure": "https://seusite.com/erro",
+            "pending": "https://seusite.com/pendente",
+        },
+        "auto_return": "approved",  # Redirecionamento automático para "success"
+        "notification_url": "https://0564-189-126-44-164.ngrok-free.app/pagamentos/webhook/",  # URL para receber notificações
+    }
+
+    # Criar a preferência de pagamento
+    try:
+        preference_response = sdk.preference().create(preference_data)
+        link_pagamento = preference_response["response"]["init_point"]
+        return JsonResponse({"link_pagamento": link_pagamento})  # Retorna o link como JSON
+    except Exception as e:
+        return JsonResponse({"error": "Erro ao gerar link de pagamento."}, status=500)
+
+
+
+
+    
+@csrf_exempt
+def pagamento_notificacao(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        id_transacao = data.get("data", {}).get("id")
+
+        # Processar o status do pagamento
+        if id_transacao:
+            sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
+            payment_info = sdk.payment().get(id_transacao)
+
+            status = payment_info["response"]["status"]
+            pedido_id = payment_info["response"]["external_reference"]
+
+            # Atualizar o status do pagamento
+            pedido = Pedido.objects.get(id=pedido_id)
+            pagamento, created = Pagamento.objects.get_or_create(
+                id_transacao=id_transacao,
+                pedido=pedido
+            )
+            pagamento.status = status
+            pagamento.save()
+
+    return JsonResponse({"message": "Notificação recebida com sucesso"})
+
+
+@login_required
+def chat(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+
+    if request.method == "POST":
+        mensagem = request.POST.get('mensagem')
+        vendedor = produto.vendedor
+
+        # Criar a mensagem no banco de dados
+        nova_mensagem = Chat.objects.create(
+            comprador=request.user,
+            vendedor=vendedor,
+            produto=produto,
+            mensagem=mensagem
+        )
+
+        return JsonResponse({
+            'status': 'sucesso',
+            'dados': {
+                'mensagem': nova_mensagem.mensagem,
+                'data_horario': nova_mensagem.data_horario.strftime('%d/%m/%Y %H:%M:%S'),
+                'usuario': request.user.email,
+            }
+        })
+
+    elif request.method == "GET":
+        # Recuperar todas as mensagens relacionadas ao produto
+        mensagens = Chat.objects.filter(produto=produto).order_by('data_horario')
+
+        mensagens_serializadas = [
+            {
+                'usuario': chat.comprador.email if chat.comprador == request.user else chat.vendedor.email,
+                'mensagem': chat.mensagem,
+                'data_horario': chat.data_horario.strftime('%d/%m/%Y %H:%M:%S'),
+            }
+            for chat in mensagens
+        ]
+        return JsonResponse({'mensagens': mensagens_serializadas})
+@login_required
+def obter_mensagens(request, produto_id):
+    if request.method == "GET":
+        # Último ID para otimizar a busca
+        ultimo_id = int(request.GET.get("ultimo_id", 0))
+        mensagens = Chat.objects.filter(produto_id=produto_id, id__gt=ultimo_id).order_by('data_horario')
+
+        mensagens_json = []
+        for mensagem in mensagens:
+            if mensagem.comprador == request.user:
+                nome = "Você"  # O cliente vê "Você" para suas próprias mensagens
+            elif mensagem.vendedor == request.user:
+                nome = "Você"  # O vendedor vê "Você" para suas próprias mensagens
+            else:
+                # Caso contrário, exibe o nome do outro participante
+                nome = mensagem.comprador.first_name if mensagem.vendedor.usuario == request.user else "Vendedor"
+
+            mensagens_json.append({
+                "id": mensagem.id,
+                "mensagem": mensagem.mensagem,
+                "nome": nome,
+                "data_horario": mensagem.data_horario.strftime("%d/%m/%Y %H:%M"),
+                "is_comprador": mensagem.comprador == request.user
+            })
+
+        return JsonResponse({"mensagens": mensagens_json}, status=200)
+    return JsonResponse({"erro": "Método inválido"}, status=400)

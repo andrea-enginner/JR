@@ -2,8 +2,8 @@
 
 {% block content %}
   <div class="container mt-5">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white text-center">
+    <div class="card shadow-sm" >
+      <div class="card-header  text-white text-center" style="background-color:#bb2d3b" >
         <h1 class="h5 mb-0">Cadastrar Produto</h1>
       </div>
       <div class="card-body">
@@ -52,7 +52,15 @@
               </div>
             </div>
           </div>
-
+          <!-- N mero de Produtos -->
+          <div class="row mb-3 align-items-center">
+            <div class="col-md-3">
+              <label for="id_num_produtos" class="form-label">Número de Produtos</label>
+            </div>
+            <div class="col-md-9">
+              <input type="number" id="id_num_produtos" name="num_produtos" class="form-control" min="1" value="1">
+            </div>
+          </div>
           <!-- Foto do Produto -->
           <div class="row mb-3 align-items-center">
             <div class="col-md-3">

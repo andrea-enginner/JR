@@ -1,5 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import EmailValidator
+from django.core.validators import RegexValidator
+
 
 # Gerenciador para criar usuários personalizados
 class UsuarioManager(BaseUserManager):
@@ -17,10 +21,21 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, password, **extra_fields)
 
+# Regex para validar números de telefone no formato (XX) XXXX-XXXX ou (XX) XXXXX-XXXX
+telefone_validator = RegexValidator(
+    regex=r'^\(\d{2}\) \d{4,5}-\d{4}$',
+    message="O número de telefone deve estar no formato (XX) XXXX-XXXX ou (XX) XXXXX-XXXX."
+)
+
 # Modelo do usuário personalizado
 class Usuario(AbstractUser):
-    email = models.EmailField(unique=True)
-    telefone = models.CharField(max_length=15, blank=True, null=True)
+    email = models.EmailField(validators=[EmailValidator()] ,unique=True)
+    telefone = models.CharField(
+        max_length=15, 
+        validators=[telefone_validator],
+        blank=True, 
+        null=True
+    )
     is_vendedor = models.BooleanField(default=False)
     foto_base64 = models.TextField(blank=True, null=True)
     # Campos não usados pelo AbstractUser
@@ -46,15 +61,22 @@ class Vendedor(models.Model):
         return self.usuario.email
 
 
+from django.db import models
+
 class Produto(models.Model):
     vendedor = models.ForeignKey(Vendedor, on_delete=models.CASCADE, related_name='produtos')
     nome = models.CharField(max_length=100)
     descricao = models.TextField()
-    preco = models.DecimalField(max_digits=10, decimal_places=2)
+    preco = models.DecimalField(max_digits=10, decimal_places=2, validators=[
+        MinValueValidator(0.10),  # O preço não pode ser menor ou igual a 0.10
+        MaxValueValidator(100)   # O preço máximo será 100
+    ])
     disponibilidade = models.BooleanField(default=True)
-    num_vendas = models.PositiveIntegerField(default=0)  # Adicione este campo
-    imagem_base64 = models.TextField(blank=True, null=True)
-    
+    num_vendas = models.PositiveIntegerField(default=0)  
+    num_produtos = models.IntegerField(validators=[MinValueValidator(0)])
+
+    imagem_base64 = models.TextField(blank=True, null=True)  # Armazena a versão Base64 da imagem
+
     def __str__(self):
         return self.nome
 
@@ -70,7 +92,6 @@ class Pedido(models.Model):
     def __str__(self):
         return f"Pedido {self.id} - {self.comprador.email} para {self.vendedor.usuario.email}"
 
-
 class Avaliacao(models.Model):
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name='avaliacoes')
     avaliador = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='avaliacoes')
@@ -78,18 +99,23 @@ class Avaliacao(models.Model):
     comentario = models.TextField(blank=True, null=True)
     data_avaliacao = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('produto', 'avaliador')  # Garante que um usuário avalie apenas uma vez um produto
+
     def __str__(self):
         return f"Avaliação de {self.avaliador.email} no produto {self.produto.nome}"
 
 
 class Chat(models.Model):
-    vendedor = models.ForeignKey(Vendedor, on_delete=models.CASCADE, related_name='chats')
-    comprador = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='chats')
+    comprador = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="comprador_chats")
+    vendedor = models.ForeignKey(Vendedor, on_delete=models.CASCADE, related_name="vendedor_chats")  # Altere para Vendedor
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name="chats")
     mensagem = models.TextField()
     data_horario = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Chat entre {self.comprador.email} e {self.vendedor.usuario.email}"
+        
+        return f"Chat: {self.comprador} -> {self.vendedor} ({self.produto.nome})"
 
 
 class Notificacao(models.Model):
@@ -102,9 +128,12 @@ class Notificacao(models.Model):
 
 
 class Pagamento(models.Model):
-    produto = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name='pagamentos')
-    tipo_pagamento = models.CharField(max_length=50, choices=[('cartao', 'Cartão de Crédito'), ('boleto', 'Boleto Bancário')])
-    pago_em = models.DateTimeField(auto_now_add=True)
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="pagamentos")
+    status = models.CharField(max_length=50, choices=[("pendente", "Pendente"), ("aprovado", "Aprovado"), ("recusado", "Recusado")])
+    metodo = models.CharField(max_length=50, default="Mercado Pago")
+    id_transacao = models.CharField(max_length=100, unique=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Pagamento de {self.produto.nome} em {self.pago_em}"
+        return f"Pagamento {self.id_transacao} - {self.status}"

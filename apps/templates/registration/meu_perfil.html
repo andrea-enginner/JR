@@ -1,0 +1,40 @@
+{% extends "marketplace/base.html" %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #bb2d3b;">
+                <h3 class="mb-0">Meu Perfil</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <!-- Avatar -->
+                        <img 
+                            src="{{ usuario.foto_base64 }}" 
+                            alt="Foto do perfil" 
+                            class="rounded-circle mb-3 img-thumbnail" 
+                            style="width: 150px; height: 150px; object-fit: cover;">
+                        <h5 class="text-primary">{{ usuario.first_name }} {{ usuario.last_name }}</h5>
+                        <p class="text-muted">{{ usuario.email }}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <h5 class="text-primary">Informações Pessoais</h5>
+                        <hr>
+                        <p><strong>Nome completo:</strong> {{ usuario.first_name }} {{ usuario.last_name }}</p>
+                        <p><strong>Email:</strong> {{ usuario.email }}</p>
+                        
+                        <!-- Caso queira adicionar mais informações -->
+                        <p><strong>Data de cadastro:</strong> {{ usuario.date_joined|date:"d/m/Y" }}</p>
+                        
+                        <h5 class="text-primary mt-4">Ações</h5>
+                        <hr>
+                        <a href="{% url 'editar_perfil' %}" class="btn btn-light btn-sm">Editar Perfil</a>
+                        <a href="{% url 'alterar_senha' %}" class="btn btn-light btn-sm">Alterar Senha</a>
+                        <a href="{% url 'marketplace' %}" class="btn btn-light btn-sm">Página inicial</a>                   
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
