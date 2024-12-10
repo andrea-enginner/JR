@@ -141,14 +141,18 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="{% url 'meu_perfil' %}">Meu Perfil</a></li>
-                                <li><a class="dropdown-item" href="">Meus Pedidos</a></li>
+                        
                                 <li><a class="dropdown-item" href="{% url 'minhas_avaliacoes' %}">Minhas Avaliações</a></li>
                                 {% if user.is_vendedor %}
                                     <li><a class="dropdown-item" href="{% url 'meus_produtos' %}">Meus Produtos</a></li>
                                     <li><a class="dropdown-item" href="{% url 'cadastrar_produto' %}">Novo Produto</a></li>
                                 {% endif %}
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Sair</a></li>
+                                <form method="POST" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button class="dropdown-item text-danger" type="submit">Sair</button>
+                                </form>
+                                
                             </ul>
                         </li>
                     {% else %}
