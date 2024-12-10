@@ -15,7 +15,7 @@ DEBUG = 1
 
 # load production server from .env
 ALLOWED_HOSTS        = [
-    'distribulanche.com.br',
+   
     'https://distribulanche.com.br',
     'https://www.distribulanche.com.br',
     'http://distribulanche.com.br',
@@ -23,7 +23,7 @@ ALLOWED_HOSTS        = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'distribulanche.com.br',
+   
     'https://distribulanche.com.br',
     'https://www.distribulanche.com.br',
     'http://distribulanche.com.br',
