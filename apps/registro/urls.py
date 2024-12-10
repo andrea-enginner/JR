@@ -22,7 +22,7 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('login/', login_view, name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('marketplace/', lambda request: render(request, 'marketplace/home.html'), name='home'),  
+    path('home/', lambda request: render(request, 'home.html'), name='home'),  
 
 #   AÇÕES DO USUÁRIO COM SEUS PRODUTOS
     path('cadastrar_produto/', cadastrar_produto, name='cadastrar_produto'), 

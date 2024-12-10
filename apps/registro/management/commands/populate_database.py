@@ -1,7 +1,9 @@
 from django.core.management.base import BaseCommand
 from faker import Faker
-from apps.registro.models import Usuario, Vendedor, Produto, Pedido, Avaliacao, Chat, Notificacao, Pagamento
-import random
+from random import randint, choice, uniform
+from decimal import Decimal
+from registro.models import Usuario, Vendedor, Produto, Pedido, Avaliacao, Chat, Notificacao, Pagamento
+
 
 class Command(BaseCommand):
     help = 'Popula o banco de dados com dados fictícios'
@@ -9,98 +11,100 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         fake = Faker()
 
-        # Função para gerar telefone com no máximo 15 caracteres
-        def generate_phone():
-            return fake.phone_number()[:15]
-
-        # Criar usuários (200 usuários no total)
+        # Cria usuários
         usuarios = []
-        for _ in range(200):
-            usuario = Usuario.objects.create(
-                nome=fake.name(),
-                email=fake.unique.email(),
-                telefone=generate_phone(),
-                is_vendedor=fake.boolean()
+        for _ in range(50):
+            usuario = Usuario.objects.create_user(
+                email=fake.email(),
+                password="senha123",
+                telefone=fake.phone_number(),
+                is_vendedor=fake.boolean(),
+                foto_base64=fake.image_url(),
             )
             usuarios.append(usuario)
-        
-        # Criar vendedores (pelo menos 100 vendedores)
+
+        # Cria vendedores
         vendedores = []
-        for usuario in usuarios[:100]:  # Converte os primeiros 100 usuários em vendedores
+        for usuario in filter(lambda u: u.is_vendedor, usuarios):
             vendedor = Vendedor.objects.create(
                 usuario=usuario,
                 localizacao=fake.address(),
-                telefone=generate_phone(),
-                status=fake.boolean()
+                telefone=fake.phone_number(),
+                status=fake.boolean(),
             )
             vendedores.append(vendedor)
-        
-        # Criar produtos (500 produtos no total)
-        produtos = []
-        for vendedor in vendedores:
-            for _ in range(5):  # 5 produtos por vendedor
-                produto = Produto.objects.create(
-                    vendedor=vendedor,
-                    nome=fake.word().capitalize(),
-                    descricao=fake.text(),
-                    preco=round(random.uniform(10.0, 100.0), 2),
-                    disponibilidade=fake.boolean()
-                )
-                produtos.append(produto)
 
-        # Criar pedidos (200 pedidos no total)
+        # Cria produtos
+        produtos = []
+        for _ in range(50):
+            vendedor = choice(vendedores)
+            produto = Produto.objects.create(
+                vendedor=vendedor,
+                nome=fake.word().capitalize(),
+                descricao=fake.text(),
+                preco=Decimal(round(uniform(0.10, 100), 2)),
+                disponibilidade=fake.boolean(),
+                num_vendas=randint(0, 100),
+                num_produtos=randint(1, 50),
+                imagem_base64=fake.image_url(),
+            )
+            produtos.append(produto)
+
+        # Cria pedidos
         pedidos = []
-        for _ in range(200):
-            comprador = random.choice([u for u in usuarios if not u.is_vendedor])
-            vendedor = random.choice(vendedores)
-            produto = random.choice(produtos)
+        for _ in range(50):
+            comprador = choice(usuarios)
+            produto = choice(produtos)
+            vendedor = produto.vendedor
             pedido = Pedido.objects.create(
                 comprador=comprador,
                 vendedor=vendedor,
                 produto=produto,
-                preco_total=produto.preco,
-                status=random.choice(['pendente', 'concluido'])
+                preco_total=produto.preco * randint(1, 5),
+                status=choice(["pendente", "concluido"]),
             )
             pedidos.append(pedido)
-        
-        # Criar avaliações (200 avaliações no total)
-        for _ in range(200):
-            avaliador = random.choice([u for u in usuarios if not u.is_vendedor])
-            produto = random.choice(produtos)
-            Avaliacao.objects.create(
+
+        # Cria avaliações
+        for _ in range(50):
+            produto = choice(produtos)
+            avaliador = choice(usuarios)
+            Avaliacao.objects.get_or_create(
                 produto=produto,
                 avaliador=avaliador,
-                nota=random.randint(1, 5),
-                comentario=fake.text()
+                defaults={
+                    "nota": randint(1, 5),
+                    "comentario": fake.text(),
+                }
             )
 
-        # Criar chats (200 mensagens de chat no total)
-        for _ in range(200):
-            vendedor = random.choice(vendedores)
-            comprador = random.choice([u for u in usuarios if not u.is_vendedor])
+        # Cria chats
+        for _ in range(50):
+            comprador = choice(usuarios)
+            produto = choice(produtos)
+            vendedor = produto.vendedor
             Chat.objects.create(
-                vendedor=vendedor,
                 comprador=comprador,
-                mensagem=fake.sentence(),
-                data_horario=fake.date_time_this_year()
+                vendedor=vendedor,
+                produto=produto,
+                mensagem=fake.text(),
             )
 
-        # Criar notificações (200 notificações no total)
-        for _ in range(200):
-            usuario = random.choice(usuarios)
+        # Cria notificações
+        for _ in range(50):
+            usuario = choice(usuarios)
             Notificacao.objects.create(
                 usuario=usuario,
-                mensagem=fake.sentence(),
-                enviado_em=fake.date_time_this_year()
+                mensagem=fake.text(),
             )
 
-        # Criar pagamentos (200 pagamentos no total)
-        for _ in range(200):
-            produto = random.choice(produtos)
+        # Cria pagamentos
+        for pedido in pedidos:
             Pagamento.objects.create(
-                produto=produto,
-                tipo_pagamento=random.choice(['cartao', 'boleto']),
-                pago_em=fake.date_time_this_year()
+                pedido=pedido,
+                status=choice(["pendente", "aprovado", "recusado"]),
+                metodo="Mercado Pago",
+                id_transacao=fake.uuid4(),
             )
 
-        self.stdout.write(self.style.SUCCESS('Banco de dados populado com centenas de registros em cada tabela!'))
+        self.stdout.write(self.style.SUCCESS("Dados fictícios criados com sucesso!"))
