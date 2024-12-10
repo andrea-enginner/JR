@@ -7,7 +7,6 @@ from django.contrib.auth import authenticate, login, logout
 
 from mercadopago import SDK
 
-from distribulanche import settings
 from registro.models import Avaliacao, Chat, Pagamento, Pedido, Produto, Vendedor
 from .forms import EditarPerfilForm, UsuarioCreationForm
 from .forms import ProdutoForm
