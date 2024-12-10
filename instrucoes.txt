@@ -1,4 +1,4 @@
-Em .env.dev e .env.prod
+Em .env.dev e .env.prode
 	- substituir as referências ao e-mail jairsonrodrigues@gmail.com
 	- modificar a referência a SRC_DIR=
 
