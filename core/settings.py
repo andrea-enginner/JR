@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'apps.registro',  
     'apps.marketplace',  
     'apps.pagamentos',
+         # Django REST Framework
+    'rest_framework',
 
 ]
 
