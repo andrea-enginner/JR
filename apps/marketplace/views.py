@@ -1,7 +1,7 @@
 from django.db.models import Q, Avg, Count, Func, F
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from registro.models import Produto
+from apps.registro.models import Produto
 
 def marketplace_view(request):
     # Termo de pesquisa
