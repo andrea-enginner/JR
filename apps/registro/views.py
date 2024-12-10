@@ -9,6 +9,7 @@ import mercadopago
 
 from mercadopago import SDK
 from django.conf import settings
+from core import settings
 
 from apps.registro.models import Avaliacao, Chat, Pagamento, Pedido, Produto, Vendedor
 from apps.registro.forms import EditarPerfilForm, UsuarioCreationForm
