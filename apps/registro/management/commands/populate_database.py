@@ -5,7 +5,7 @@ from decimal import Decimal
 from registro.models import Usuario, Vendedor, Produto, Pedido, Avaliacao, Chat, Notificacao, Pagamento
 
 
- try:
+try:
     # Simulação de importação
     from faker import Faker
     fake = Faker()
