@@ -5,6 +5,8 @@ from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 
+import mercadopago
+
 from mercadopago import SDK
 
 from apps.registro.models import Avaliacao, Chat, Pagamento, Pedido, Produto, Vendedor
@@ -288,6 +290,12 @@ def produto_comprar_view(request, produto_id):
     # Capturar a quantidade enviada pelo formulário (ou usar 1 como padrão)
     quantidade = int(request.POST.get("quantidade", 1))
     total_preco = float(produto.preco) * quantidade
+
+    try:
+        import mercadopago
+        except ImportError as e:
+        print("Erro ao importar o pacote Mercado Pago:", e)
+        return HttpResponse("Erro ao importar o pacote Mercado Pago", status=500)
 
     # Configurar o Mercado Pago
     sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
